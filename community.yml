@@ -112,6 +112,7 @@
     - { role: resilio-sync, tags: ['resilio-sync'] }
     - { role: rocketchat, tags: ['rocketchat'] }
     - { role: searx, tags: ['searx'] }
+    - { role: shoko, tags: ['shoko'] }
     - { role: sickchill, tags: ['sickchill'] }
     - { role: smokeping, tags: ['smokeping'] }
     - { role: sonarrx, tags: ['sonarrx'] }

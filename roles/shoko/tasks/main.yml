@@ -1,0 +1,54 @@
+#########################################################################
+# Title:            Community: Shoko                                    #
+# Author(s):        Mio.                                                #
+# URL:              https://github.com/Cloudbox/Community               #
+# Docker Image(s):  shokoanime/server                                   #
+# --                                                                    #
+#         Part of the Cloudbox project: https://cloudbox.works          #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Setting CloudFlare DNS Record"
+  include_role:
+    name: cloudflare-dns
+  vars:
+    record: goplaxt
+  when: cloudflare_enabled
+
+- name: Stop and remove any existing container
+  docker_container:
+    name: shoko
+    state: absent
+
+- name: Create shoko directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+  with_items:
+    - /opt/shoko
+
+- name: Create and start container
+  docker_container:
+    name: shoko
+    image: shokoanime/server:latest
+    pull: yes
+    env:
+      TZ: "{{ tz }}"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      VIRTUAL_HOST: "shoko.{{ user.domain }}"
+      VIRTUAL_PORT: "8111"
+      LETSENCRYPT_HOST: "shoko.{{ user.domain }}"
+      LETSENCRYPT_EMAIL: "{{ user.email }}"
+      REDIRECT_URI: "https://shoko.{{ user.domain }}"
+    volumes:
+      - "/opt/shoko:/home/shoko/.shoko"
+      - "/mnt:/mnt"
+    labels:
+      "com.github.cloudbox.cloudbox_managed": "true"
+    networks:
+      - name: cloudbox
+        aliases:
+          - shoko
+    purge_networks: yes
+    restart_policy: unless-stopped
+    state: started
